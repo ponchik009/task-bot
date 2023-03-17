@@ -1,7 +1,13 @@
 {
   "apiId": 18094927,
   "apiHash": "e845b770862fba74a63761726bff22c5",
-  "stringSession": "1AgAOMTQ5LjE1NC4xNjcuNDEBu6h+h3zTYwSD9v4Z33ndxJOlocSpv18tslTK7Han6/Hen/Safnd4sgbUJcdlkhJ9Uv+jnVdMbfKXy3xxCMhtLCwtz71L5+rzjMVySh5wLl8lMTcvctZylC6k8NIEQC6uXR35lFpHt5CtEcnPWmeBXlyA6JteOou2sPD34HqH6huDalJUMUvU1Iw3bgS6UKihHKlehKydBKcKQBUdiR0wpZD1/58lL2j5xV1QD4R4yUJxeFqDZwi0ILOfHONr2R7WuAgFnIdrDhXbf18f4ygrbF24WhY9qt/c7DXsTbQAhHg6s8lsDA2zhHui117QUANHJi+ME4DgQaZ71fLvAy4DLdY=",
   "botToken": "5716255450:AAFDSi8PlpUKDykuk8V61I0cl4smXHFL3KI",
-  "data": {}
+  "data": {
+    "йцу": {
+      "name": "йцу",
+      "start": "02:49:43 2023-03-18",
+      "end": "02:49:49 2023-03-18",
+      "diff": "00:00:06"
+    }
+  }
 }

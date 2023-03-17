@@ -87,10 +87,7 @@ class Bot {
 
       const taskName = action;
       const startDate = this.config.data[taskName].start;
-      const endDate = format(
-        zonedTimeToUtc(Date.now(), TIME_ZONE),
-        "HH:mm:ss yyyy-MM-dd"
-      );
+      const endDate = format(Date.now(), "HH:mm:ss yyyy-MM-dd");
 
       this.config.data[taskName].end = endDate;
 
@@ -137,10 +134,7 @@ class Bot {
       msg.from.id
     );
 
-    const startDate = format(
-      zonedTimeToUtc(Date.now(), TIME_ZONE),
-      "HH:mm:ss yyyy-MM-dd"
-    );
+    const startDate = format(Date.now(), "HH:mm:ss yyyy-MM-dd");
 
     this.config.data[taskName] = {
       name: taskName,
@@ -152,7 +146,7 @@ class Bot {
 
     this.bot.sendMessage(
       msg.from.id,
-      `Начало задачи "${taskName}". Время: ${startDate}`
+      `Начало задачи "${taskName}"\nВремя: ${startDate}`
     );
 
     return this.showMainMenu(msg.from.id);
