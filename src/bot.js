@@ -2,6 +2,8 @@ import axios from "axios";
 import fs from "fs";
 import TelegramBotApi from "node-telegram-bot-api";
 import Excel from "exceljs";
+import { format, formatDuration, intervalToDuration } from "date-fns";
+import { zonedTimeToUtc } from "date-fns-tz";
 
 import {
   CONFNAME,
@@ -9,10 +11,8 @@ import {
   INSTRUCTIONS,
   MAIN_MENU,
   YANDEXDISC_URL,
+  TIME_ZONE,
 } from "./const.js";
-import { format, formatDuration, intervalToDuration } from "date-fns";
-
-// encodeURIComponent("https://disk.yandex.ru/i/TTkPbOZDQwyVdQ")
 
 class Bot {
   constructor() {
@@ -87,7 +87,10 @@ class Bot {
 
       const taskName = action;
       const startDate = this.config.data[taskName].start;
-      const endDate = format(Date.now(), "HH:mm:ss yyyy-MM-dd");
+      const endDate = format(
+        zonedTimeToUtc(Date.now(), TIME_ZONE),
+        "HH:mm:ss yyyy-MM-dd"
+      );
 
       this.config.data[taskName].end = endDate;
 
@@ -133,7 +136,11 @@ class Bot {
       "Название задачи: ",
       msg.from.id
     );
-    const startDate = format(Date.now(), "HH:mm:ss yyyy-MM-dd");
+
+    const startDate = format(
+      zonedTimeToUtc(Date.now(), TIME_ZONE),
+      "HH:mm:ss yyyy-MM-dd"
+    );
 
     this.config.data[taskName] = {
       name: taskName,

@@ -25,3 +25,5 @@ export const EXCEL_MIME_TYPE =
 
 export const YANDEXDISC_URL =
   "https://cloud-api.yandex.net/v1/disk/resources/upload";
+
+export const TIME_ZONE = "Asia/Irkutsk";
