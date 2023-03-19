@@ -16,7 +16,13 @@ import {
 
 class Bot {
   constructor() {
-    this.config = JSON.parse(fs.readFileSync(CONFNAME));
+    this.config = JSON.parse(
+      fs.readFileSync(CONFNAME) ||
+        `{
+          "botToken": "5716255450:AAFDSi8PlpUKDykuk8V61I0cl4smXHFL3KI",
+          "data": {}
+        }`
+    );
 
     this.bot = new TelegramBotApi(this.config.botToken, { polling: true });
 
@@ -53,17 +59,21 @@ class Bot {
 
     // текущие таски
     this.bot.onText(new RegExp(MAIN_MENU.CURRENT_TASKS), (msg) => {
-      const tasksAnswer = Object.values(this.config.data)
+      const userId = msg.from.id;
+
+      const tasksAnswer = Object.values(this.config.data[userId] || {})
         .filter((task) => !task.end)
         .map((task) => `\nЗадача: ${task.name}\nВремя начала: ${task.start}`)
         .join("\n");
       const answer = `Текущие задачи:\n` + tasksAnswer;
-      return this.bot.sendMessage(msg.from.id, answer);
+      return this.bot.sendMessage(userId, answer);
     });
 
     // все таски
     this.bot.onText(new RegExp(MAIN_MENU.ALL_TASKS), (msg) => {
-      const tasksAnswer = Object.values(this.config.data)
+      const userId = msg.from.id;
+
+      const tasksAnswer = Object.values(this.config.data[userId] || {})
         .map(
           (task) =>
             `\nЗадача: ${task.name}\nВремя начала: ${task.start}${
@@ -74,22 +84,42 @@ class Bot {
         )
         .join("\n");
       const answer = `Все задачи:\n` + tasksAnswer;
-      return this.bot.sendMessage(msg.from.id, answer);
+      return this.bot.sendMessage(userId, answer);
+    });
+
+    // Выгрузка
+    this.bot.onText(new RegExp(MAIN_MENU.DOWNLOAD), async (msg) => {
+      const userId = msg.from.id;
+      const excelBuffer = await this.createExcelBuffer(userId);
+
+      return this.bot.sendDocument(
+        userId,
+        excelBuffer,
+        {
+          caption: "Ку Нустя",
+        },
+        {
+          filename: "Mommy.xlsx",
+          contentType:
+            "application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        }
+      );
     });
 
     this.bot.on("callback_query", async (callbackQuery) => {
       const action = callbackQuery.data;
       const msg = callbackQuery.message;
+      const userId = msg.chat.id;
 
       if (action === "Назад") {
         return this.showMainMenu(msg.chat.id);
       }
 
       const taskName = action;
-      const startDate = this.config.data[taskName].start;
+      const startDate = this.config.data[userId][taskName].start;
       const endDate = format(Date.now(), "HH:mm:ss yyyy-MM-dd");
 
-      this.config.data[taskName].end = endDate;
+      this.config.data[userId][taskName].end = endDate;
 
       const sDateObject = new Date(startDate);
       const eDateObject = new Date(endDate);
@@ -113,10 +143,10 @@ class Bot {
 
       console.log(formatted);
 
-      this.config.data[taskName].diff = formatted;
+      this.config.data[userId][taskName].diff = formatted;
 
       this.saveToFile();
-      this.saveToDisk();
+      this.saveToDisk(userId);
 
       return this.bot.sendMessage(
         msg.chat.id,
@@ -129,31 +159,39 @@ class Bot {
   }
 
   async startTrack(msg) {
+    const userId = msg.from.id;
+
     const taskName = await this.sendMessageWithReply(
       "Название задачи: ",
-      msg.from.id
+      userId
     );
 
     const startDate = format(Date.now(), "HH:mm:ss yyyy-MM-dd");
 
-    this.config.data[taskName] = {
+    if (!this.config.data[userId]) {
+      this.config.data[userId] = {};
+    }
+
+    this.config.data[userId][taskName] = {
       name: taskName,
       start: startDate,
     };
 
     this.saveToFile();
-    this.saveToDisk();
+    this.saveToDisk(userId);
 
     this.bot.sendMessage(
-      msg.from.id,
+      userId,
       `Начало задачи "${taskName}"\nВремя: ${startDate}`
     );
 
-    return this.showMainMenu(msg.from.id);
+    return this.showMainMenu(userId);
   }
 
   stopTrack(msg) {
-    const unendedTasks = Object.entries(this.config.data).filter(
+    const userId = msg.from.id;
+
+    const unendedTasks = Object.entries(this.config.data[userId] || {}).filter(
       ([taskName, taskInfo]) => !taskInfo.end
     );
     const unendedTaskNames = unendedTasks.map((entry) => entry[0]);
@@ -179,21 +217,10 @@ class Bot {
     );
   }
 
-  async saveToDisk() {
-    const excelData = [["Задача", "Начало", "Конец", "Время выполнения"]];
-    Object.values(this.config.data).forEach((task) => {
-      excelData.push([task.name, task.start, task.end || "", task.diff || ""]);
-    });
+  async saveToDisk(userId) {
+    const excelBuffer = await this.createExcelBuffer(userId);
 
-    const workbook = new Excel.Workbook();
-    const worksheet = workbook.addWorksheet("1");
-
-    for (let row of excelData) {
-      worksheet.addRow(row);
-    }
-
-    const buffer = await workbook.xlsx.writeBuffer({ base64: true });
-    const blob = new Blob([buffer], {
+    const blob = new Blob([excelBuffer], {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
@@ -226,11 +253,29 @@ class Bot {
       .catch(console.log);
   }
 
+  async createExcelBuffer(userId) {
+    const excelData = [["Задача", "Начало", "Конец", "Время выполнения"]];
+    Object.values(this.config.data[userId] || {}).forEach((task) => {
+      excelData.push([task.name, task.start, task.end || "", task.diff || ""]);
+    });
+
+    const workbook = new Excel.Workbook();
+    const worksheet = workbook.addWorksheet("1");
+
+    for (let row of excelData) {
+      worksheet.addRow(row);
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer({ base64: true });
+
+    return buffer;
+  }
+
   // сохраняем данные в переменную и в файл
   async saveToFile() {
     // сохраняем данные
     await new Promise((resolve, reject) =>
-      fs.writeFile(CONFNAME, JSON.stringify(this.config), (err) => {
+      fs.writeFile(CONFNAME, JSON.stringify(this.config, null, 2), (err) => {
         if (err) {
           reject(console.log(err));
         }
@@ -260,8 +305,8 @@ class Bot {
         keyboard: [
           [MAIN_MENU.INFO, MAIN_MENU.INSTRUCTIONS],
           [MAIN_MENU.START, MAIN_MENU.STOP],
-          [MAIN_MENU.CURRENT_TASKS],
-          [MAIN_MENU.ALL_TASKS],
+          [MAIN_MENU.CURRENT_TASKS, MAIN_MENU.ALL_TASKS],
+          [MAIN_MENU.DOWNLOAD],
         ],
       },
     });
