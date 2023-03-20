@@ -98,6 +98,6 @@ jobs:
             echo "Pull new image"
             docker image pull ${{ secrets.DOCKERHUB_USERNAME }}/taskbot:latest
             echo "Restart the container"
-            docker run ${{ secrets.DOCKERHUB_USERNAME }}/taskbot --mount type=bind,source=${{ secrets.VPS_MOUNT_PATH }},target=/app
+            docker run --mount type=bind,source=${{ secrets.VPS_MOUNT_PATH }},target=/app ${{ secrets.DOCKERHUB_USERNAME }}/taskbot 
             echo "Delete old image"
             docker image prune -f
