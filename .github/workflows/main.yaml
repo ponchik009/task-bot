@@ -99,5 +99,6 @@ jobs:
             docker image pull ${{ secrets.DOCKERHUB_USERNAME }}/taskbot:latest
             echo "Restart the container"
             docker run --mount type=bind,source=${{ secrets.VPS_MOUNT_PATH }},target=/app/data ${{ secrets.DOCKERHUB_USERNAME }}/taskbot 
-            echo "Delete old image"
-            docker image prune -f
+            echo "Delete old images"
+            docker rm $(docker ps --filter status=exited -q)
+            docker image rm $(docker image ls -qf dangling=true)
