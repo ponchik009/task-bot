@@ -11,6 +11,10 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+env:
+  IMAGE_NAME: taskbot
+  CONTAINER_NAME: taskbot
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains multiple jobs
@@ -64,12 +68,12 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/taskbot:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{env.IMAGE_NAME}}:latest
 
       - name: Run the image in a container
         uses: addnab/docker-run-action@v3
         with:
-          image: ${{ secrets.DOCKERHUB_USERNAME }}/taskbot:latest
+          image: ${{ secrets.DOCKERHUB_USERNAME }}/${{env.IMAGE_NAME}}:latest
           run: |
             echo "runing the docker image"
             echo "Testing the nodejs app endpoints"
@@ -95,10 +99,11 @@ jobs:
           script: |
             echo "Change user"
             su -l ${{ secrets.VPS_SSH_USER }}
-            echo "Pull new image"
-            docker image pull ${{ secrets.DOCKERHUB_USERNAME }}/taskbot:latest
-            echo "Restart the container"
-            docker run --mount type=bind,source=${{ secrets.VPS_MOUNT_PATH }},target=/app/data ${{ secrets.DOCKERHUB_USERNAME }}/taskbot 
-            echo "Delete old images"
+            echo "Delete old images and containers"
+            docker stop ${{ env.CONTAINER_NAME }}
             docker rm $(docker ps --filter status=exited -q)
             docker image rm $(docker image ls -qf dangling=true)
+            echo "Pull new image"
+            docker image pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+            echo "Restart the container"
+            docker run --mount type=bind,source=${{ secrets.VPS_MOUNT_PATH }},target=/app/data --name ${{ env.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
