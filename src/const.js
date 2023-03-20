@@ -1,4 +1,4 @@
-export const CONFNAME = "./config.json";
+export const CONFNAME = "./data/config.json";
 
 export const INFO = `
 Привет Настя, я бот, который необходим, чтобы ты могла трекать своё ценное время
