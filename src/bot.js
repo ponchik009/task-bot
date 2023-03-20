@@ -3,7 +3,7 @@ import fs from "fs";
 import TelegramBotApi from "node-telegram-bot-api";
 import Excel from "exceljs";
 import { format, formatDuration, intervalToDuration } from "date-fns";
-import { zonedTimeToUtc } from "date-fns-tz";
+import { v4 as uuidv4 } from "uuid";
 
 import {
   CONFNAME,
@@ -116,10 +116,11 @@ class Bot {
       }
 
       const taskName = action;
-      const startDate = this.config.data[userId][taskName].start;
+      const taskObject = Object.values(this.config.data[userId]).find(
+        (task) => task.name === taskName
+      );
+      const startDate = taskObject.start;
       const endDate = format(Date.now(), "HH:mm:ss yyyy-MM-dd");
-
-      this.config.data[userId][taskName].end = endDate;
 
       const sDateObject = new Date(startDate);
       const eDateObject = new Date(endDate);
@@ -141,9 +142,16 @@ class Bot {
         },
       });
 
-      console.log(formatted);
+      if (taskObject.id) {
+        this.config.data[userId][taskObject.id].end = endDate;
+        this.config.data[userId][taskObject.id].diff = formatted;
+      } else {
+        // задачи из старой версии, у них нет id
+        this.config.data[userId][taskName].end = endDate;
+        this.config.data[userId][taskName].diff = formatted;
+      }
 
-      this.config.data[userId][taskName].diff = formatted;
+      console.log(formatted);
 
       this.saveToFile();
       this.saveToDisk(userId);
@@ -172,7 +180,9 @@ class Bot {
       this.config.data[userId] = {};
     }
 
-    this.config.data[userId][taskName] = {
+    const taskId = uuidv4();
+    this.config.data[userId][taskId] = {
+      id: taskId,
       name: taskName,
       start: startDate,
     };
@@ -191,10 +201,10 @@ class Bot {
   stopTrack(msg) {
     const userId = msg.from.id;
 
-    const unendedTasks = Object.entries(this.config.data[userId] || {}).filter(
-      ([taskName, taskInfo]) => !taskInfo.end
+    const unendedTasks = Object.values(this.config.data[userId] || {}).filter(
+      (taskInfo) => !taskInfo.end
     );
-    const unendedTaskNames = unendedTasks.map((entry) => entry[0]);
+    const unendedTaskNames = unendedTasks.map((task) => task.name);
     const inlineKeyboard = unendedTaskNames.map((task) => [
       { text: task, callback_data: task },
     ]);
