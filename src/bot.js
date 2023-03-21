@@ -110,6 +110,7 @@ class Bot {
       const action = callbackQuery.data;
       const msg = callbackQuery.message;
       const userId = msg.chat.id;
+      console.log(userId);
 
       if (action === "Назад") {
         return this.showMainMenu(msg.chat.id);
@@ -199,7 +200,9 @@ class Bot {
   }
 
   stopTrack(msg) {
+    console.log(msg);
     const userId = msg.from.id;
+    console.log(userId);
 
     const unendedTasks = Object.values(this.config.data[userId] || {}).filter(
       (taskInfo) => !taskInfo.end
@@ -221,7 +224,7 @@ class Bot {
       }),
     };
     this.bot.sendMessage(
-      msg.chat.id,
+      userId,
       "Выбери задачу, которую нужно закончить",
       options
     );
