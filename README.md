@@ -8,7 +8,11 @@
 
 ![изображение](https://user-images.githubusercontent.com/98012969/227709116-96843ccf-4e11-4a0c-b393-93be61f40416.png)
 
+![изображение](https://user-images.githubusercontent.com/98012969/227709251-7e22111d-7fc7-4e7d-bff4-09353be77881.png)
+
 ![изображение](https://user-images.githubusercontent.com/98012969/227709125-954a14fa-baeb-40e5-b3f7-20ddda1dcbed.png)
+
+![изображение](https://user-images.githubusercontent.com/98012969/227709263-04ff29be-ea0d-4c71-8009-fff1a4f35c56.png)
 
 ![изображение](https://user-images.githubusercontent.com/98012969/227709142-71916e84-2706-4e57-bff1-f8e385302206.png)
 
