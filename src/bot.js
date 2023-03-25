@@ -96,10 +96,10 @@ class Bot {
         userId,
         excelBuffer,
         {
-          caption: "Ку Нустя",
+          caption: "Держи свои задачи, пользователь",
         },
         {
-          filename: "Mommy.xlsx",
+          filename: "Tasks.xlsx",
           contentType:
             "application/application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         }
@@ -237,7 +237,7 @@ class Bot {
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
-    const docName = "Mommy.xlsx";
+    const docName = "Tasks.xlsx";
 
     const data = await axios
       .get(`${YANDEXDISC_URL}?path=%2FMommy%2F${docName}&overwrite="true"`, {
