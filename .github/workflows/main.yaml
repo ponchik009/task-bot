@@ -97,8 +97,6 @@ jobs:
           # SSH port
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
-            echo "Change user"
-            su -l ${{ secrets.VPS_SSH_USER }}
             echo "Delete old images and containers"
             docker stop ${{ env.CONTAINER_NAME }}
             docker rm $(docker ps --filter status=exited -q)
