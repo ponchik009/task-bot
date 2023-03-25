@@ -97,11 +97,15 @@ jobs:
           # SSH port
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
-            echo "Delete old images and containers"
+
             echo "Pull new image"
             docker image pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
-            echo "Restart the container"
+            echo "Stop current container"
             docker stop ${{ env.CONTAINER_NAME }}
+            echo "Delete old containers"
             docker container prune -f
+            echo "Restart the container"
             docker run --mount type=bind,source=${{ secrets.VPS_MOUNT_PATH }},target=/app/data --name ${{ env.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
+            echo "Delete old images"
             docker image rm $(docker image ls -qf dangling=true)
+            exit
