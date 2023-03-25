@@ -102,6 +102,6 @@ jobs:
             docker image pull ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
             echo "Restart the container"
             docker stop ${{ env.CONTAINER_NAME }}
-            docker run --mount type=bind,source=${{ secrets.VPS_MOUNT_PATH }},target=/app/data --name ${{ env.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
             docker rm $(docker ps --filter status=exited -q)
+            docker run --mount type=bind,source=${{ secrets.VPS_MOUNT_PATH }},target=/app/data --name ${{ env.CONTAINER_NAME }} ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
             docker image rm $(docker image ls -qf dangling=true)
